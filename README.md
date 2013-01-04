@@ -16,4 +16,4 @@ Only tested with Chrome Canary. Needs local file-access:
 
 ### wat?
 
-http://cl.ly/image/3u1x3C2D393i
+![screenshot](http://cl.ly/image/3u1x3C2D393i)

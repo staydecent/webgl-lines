@@ -1,50 +1,78 @@
 ;(function drawLoop(){
-    requestAnimFrame(drawLoop)
-    draw()
-    update()
-})()
+  requestAnimFrame(drawLoop);
+  draw();
+  update();
+})();
 
-var increaseZ = true
-var increaseY = true
+var increaseZ = true;
+var increaseY = true;
+
+var imageData, imageReady = false;
+
 
 // use this for keyboard controls etc.
 function update() {
+  clearScene();
+
+  // if webcam is streaming to <video>
+  if (localMediaStream) {
+    // each frame, capture <video> to <canvas>
+    
+    ctx.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+
+    var image = ctx.getImageData(0, 0, video.clientWidth, video.clientHeight);
+    var data = image.data;
+
+    for (var i = 0; i < data.length; i += 4) {
+      var r = data[i];
+      var g = data[i+1];
+      var b = data[i+2];
+      // CIE luminance for the RGB
+      // The human eye is bad at seeing red and blue, so we de-emphasize them.
+      var v = 0.2126*r + 0.7152*g + 0.0722*b;
+      data[i] = data[i+1] = data[i+2] = v;
+    }
+
+    // overwrite original image
+    ctx.putImageData(image, 0, 0);
+
+    var imageURI = canvas.toDataURL('image/png');
+    var planeTexture = new THREE.ImageUtils.loadTexture(imageURI, new THREE.UVMapping(), function(e){ 
+        planeTexture.flipY = true;
+        imageData = getImageData(planeTexture.image);
+        imageReady = true;
+    });
+    var planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture });
+    var planeGeometry = new THREE.PlaneGeometry(940, 480);
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    camera.lookAt(plane.position);
+  }
 }
 
 // draw yer shit
 function draw() {
-    // loop camera position
-    if (camera.position.z > 980) increaseZ = false
-    if (camera.position.z < 20)  increaseZ = true
+  
+  // draw lines when image is ready
+  if (imageReady) {
+    imageReady = false;
 
-    if (camera.position.z < 1000 && increaseZ) {
-        camera.position.z = camera.position.z + 10
+    // 1 line for every 10 pixels of image height
+    for (var y = 0; y <= imageData.height; y=y+5) {
+      var lineGeometry = new THREE.Geometry();
+      lineGeometry.vertices = [];
+
+      // 1 vertice for every 10 pixels of width
+      for (var x = 0; x<=imageData.width; x=x+5) {
+        var colour = getPixel(imageData, x, y);
+        lineGeometry.vertices.push(
+          new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.b));
+      }
+
+      var line = new THREE.Line(lineGeometry, lineMaterial);
+      scene.add(line);
     }
+  }
 
-    if (camera.position.z > 0 && !increaseZ) {
-        camera.position.z = camera.position.z - 10
-    }
-
-    // draw lines when image is ready
-    if (imageReady) {
-        imageReady = false
-
-        // 1 line for every 10 pixels of image height
-        for (var y = 0; y <= imageData.height; y=y+10) {
-            var lineGeometry = new THREE.Geometry()
-            lineGeometry.vertices = []
-
-            // 1 vertice for every 10 pixels of width
-            for (var x = 0; x<=imageData.width; x=x+10) {
-                var colour = getPixel(imageData, x, y)
-                lineGeometry.vertices.push(new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.r))
-            }
-
-            var line = new THREE.Line(lineGeometry, lineMaterial)
-            scene.add(line)
-        }
-    }
-
-    // render
-    renderer.render(scene, camera)
+  // render
+  renderer.render(scene, camera);
 }

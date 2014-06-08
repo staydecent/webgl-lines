@@ -11,13 +11,13 @@ var imageData, imageReady = false;
 
 
 // use this for keyboard controls etc.
+// -- we copy the webcam frame to our other canvas
 function update() {
-  clearScene();
+  clearScene(); // clears last scenes lines
 
   // if webcam is streaming to <video>
   if (localMediaStream) {
     // each frame, capture <video> to <canvas>
-    
     ctx.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
 
     var image = ctx.getImageData(0, 0, video.clientWidth, video.clientHeight);
@@ -33,28 +33,20 @@ function update() {
       data[i] = data[i+1] = data[i+2] = v;
     }
 
-    // overwrite original image
+    // overwrite original image with grayscale/dimmed version
     ctx.putImageData(image, 0, 0);
-
-    var imageURI = canvas.toDataURL('image/png');
-    var planeTexture = new THREE.ImageUtils.loadTexture(imageURI, new THREE.UVMapping(), function(e){ 
-        planeTexture.flipY = true;
-        imageData = getImageData(planeTexture.image);
-        imageReady = true;
-    });
-    var planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture });
-    var planeGeometry = new THREE.PlaneGeometry(940, 480);
-    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    camera.lookAt(plane.position);
+    imageData = ctx.getImageData(0, 0, image.width, image.height);
+    imageReady = true;
   }
 }
 
 // draw yer shit
 function draw() {
-  
   // draw lines when image is ready
   if (imageReady) {
     imageReady = false;
+
+    var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffee00 });
 
     // 1 line for every 10 pixels of image height
     for (var y = 0; y <= imageData.height; y=y+5) {

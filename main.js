@@ -1,22 +1,17 @@
-// renderer
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-$('#main').append(renderer.domElement);
-
-// records webcam, outputting to <video>
+// node refs and globals
 var video = document.querySelector('video');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var localMediaStream = null;
 var once = true;
 
-
 setTimeout(function() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   once = false;
-}, 4000);
+}, 2000);
 
+// webcam
 var errorCallback = function(e) {
   console.log('Reeeejected!', e);
 };
@@ -33,7 +28,7 @@ navigator.webkitGetUserMedia(vgaConstraints, function(stream) {
   localMediaStream = stream;
 }, errorCallback);
 
-// scene, plane
+// scene, camera, render
 var scene = new THREE.Scene();
 var clearScene = function() {
   var objsToRemove = scene.children;
@@ -44,24 +39,11 @@ var clearScene = function() {
   });
 };
 
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+camera.position.z = 500;
 
-// camera
-var width = window.innerWidth;
-var height = window.innerHeight;
-var camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-camera.position.set(0, -150, 600);
-
-// lights
-var pointLight = new THREE.PointLight(0xcc00ff);
-pointLight.position.set(0, 150, 100);
-
-// lines!
-var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffee00 });
-
-// add to the scene!
-scene.add(camera);
-scene.add(pointLight);
-
-// Render atleast once
-renderer.render(scene, camera);

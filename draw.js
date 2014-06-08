@@ -47,14 +47,15 @@ function draw() {
     imageReady = false;
 
     var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffee00 });
+    var spacing = 2;
 
     // 1 line for every 10 pixels of image height
-    for (var y = 0; y <= imageData.height; y=y+5) {
+    for (var y = 0; y <= imageData.height; y=y+spacing) {
       var lineGeometry = new THREE.Geometry();
       lineGeometry.vertices = [];
 
       // 1 vertice for every 10 pixels of width
-      for (var x = 0; x<=imageData.width; x=x+5) {
+      for (var x = 0; x<=imageData.width; x=x+spacing) {
         var colour = getPixel(imageData, x, y);
         lineGeometry.vertices.push(
           new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.b));

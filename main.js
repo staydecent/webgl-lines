@@ -9,7 +9,7 @@ setTimeout(function() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   once = false;
-}, 2000);
+}, 4000);
 
 // webcam
 var errorCallback = function(e) {

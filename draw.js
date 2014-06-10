@@ -58,7 +58,7 @@ function draw() {
       for (var x = 0; x<=imageData.width; x=x+spacing) {
         var colour = getPixel(imageData, x, y);
         lineGeometry.vertices.push(
-          new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.b));
+          new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.g));
       }
 
       var line = new THREE.Line(lineGeometry, lineMaterial);

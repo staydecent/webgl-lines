@@ -1,71 +1,122 @@
-;(function drawLoop(){
-  requestAnimFrame(drawLoop);
-  draw();
-  update();
-})();
+/* globals THREE */
+// SETUP
+// ---
 
-var increaseZ = true;
-var increaseY = true;
+// node refs and globals
+var video = document.querySelector('video')
+var canvas = document.querySelector('canvas')
+var ctx = canvas.getContext('2d')
+var localMediaStream = null
 
-var imageData, imageReady = false;
+setTimeout(function () {
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+}, 4000)
 
+// webcam
+var errorCallback = function (e) {
+  console.log('Reeeejected!', e)
+}
+var vgaConstraints = {
+  video: {
+    mandatory: {
+      maxWidth: 480,
+      maxHeight: 360
+    }
+  }
+}
+navigator.webkitGetUserMedia(vgaConstraints, function (stream) {
+  video.src = window.URL.createObjectURL(stream)
+  localMediaStream = stream
+}, errorCallback)
+
+// scene, camera, render
+var scene = new THREE.Scene()
+var clearScene = function () {
+  var objsToRemove = scene.children
+  var index = 0
+  objsToRemove.forEach(function (object) {
+    if (index++ === 1) return
+    scene.remove(object)
+  })
+}
+
+var aspect = window.innerWidth / window.innerHeight
+var camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000)
+camera.position.z = 600
+
+var renderer = new THREE.WebGLRenderer()
+renderer.setSize(window.innerWidth, window.innerHeight)
+document.body.appendChild(renderer.domElement)
+
+// DRAW
+// ---
+
+;(function drawLoop () {
+  window.requestAnimFrame(drawLoop)
+  draw()
+  update()
+})()
+
+var imageData
+var imageReady = false
 
 // use this for keyboard controls etc.
 // -- we copy the webcam frame to our other canvas
-function update() {
-  clearScene(); // clears last scenes lines
+function update () {
+  clearScene() // clears last scenes lines
 
   // if webcam is streaming to <video>
   if (localMediaStream) {
     // each frame, capture <video> to <canvas>
-    ctx.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+    ctx.drawImage(video, 0, 0, video.clientWidth, video.clientHeight)
 
-    var image = ctx.getImageData(0, 0, video.clientWidth, video.clientHeight);
-    var data = image.data;
+    var image = ctx.getImageData(0, 0, video.clientWidth, video.clientHeight)
+    var data = image.data
 
     for (var i = 0; i < data.length; i += 4) {
-      var r = data[i];
-      var g = data[i+1];
-      var b = data[i+2];
+      var r = data[i]
+      var g = data[i + 1]
+      var b = data[i + 2]
       // CIE luminance for the RGB
       // The human eye is bad at seeing red and blue, so we de-emphasize them.
-      var v = 0.2126*r + 0.7152*g + 0.0722*b;
-      data[i] = data[i+1] = data[i+2] = v;
+      var v = 0.2126 * r + 0.7152 * g + 0.0722 * b
+      data[i] = data[i + 1] = data[i + 2] = v
     }
 
     // overwrite original image with grayscale/dimmed version
-    ctx.putImageData(image, 0, 0);
-    imageData = ctx.getImageData(0, 0, image.width, image.height);
-    imageReady = true;
+    ctx.putImageData(image, 0, 0)
+    imageData = ctx.getImageData(0, 0, image.width, image.height)
+    imageReady = true
   }
 }
 
 // draw yer shit
-function draw() {
+function draw () {
   // draw lines when image is ready
   if (imageReady) {
-    imageReady = false;
+    imageReady = false
 
-    var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffee00 });
-    var spacing = 2;
+    var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffee00 })
+    var spacing = 2
 
     // 1 line for every 10 pixels of image height
-    for (var y = 0; y <= imageData.height; y=y+spacing) {
-      var lineGeometry = new THREE.Geometry();
-      lineGeometry.vertices = [];
+    for (var y = 0; y <= imageData.height; y = y + spacing) {
+      var lineGeometry = new THREE.Geometry()
+      lineGeometry.vertices = []
 
       // 1 vertice for every 10 pixels of width
-      for (var x = 0; x<=imageData.width; x=x+spacing) {
-        var colour = getPixel(imageData, x, y);
+      for (var x = 0; x <= imageData.width; x = x + spacing) {
+        var colour = window.getPixel(imageData, x, y)
         lineGeometry.vertices.push(
-          new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.g));
+          new THREE.Vector3(x - (imageData.width / 2), y - (imageData.height / 2), colour.g))
       }
 
-      var line = new THREE.Line(lineGeometry, lineMaterial);
-      scene.add(line);
+      var line = new THREE.Line(lineGeometry, lineMaterial)
+      scene.add(line)
     }
   }
 
   // render
-  renderer.render(scene, camera);
+  renderer.render(scene, camera)
 }

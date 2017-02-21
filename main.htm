@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Sample Three.js</title>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/camanjs/4.0.0/caman.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
   <style>
     * {
       margin:0;
@@ -11,12 +11,11 @@
     }
     #main {
       background: #000;
-      /*width: auto;
-      height: 100%;
-      min-height:800px;*/
     }
     video,
     #imageCanvas {
+      min-width: '480px';
+      min-height: '360px';
     }
   </style>
 </head>
@@ -24,12 +23,10 @@
   <video autoplay></video>
   <canvas id="imageCanvas"></canvas>
   <div id="main"></div>
-</body>
 
-<script src="libs/zepto.min.js"></script>
-<script src="libs/three.min.js"></script>
-<script src="libs/requestAnimFrame.polyfill.js"></script>
-<script src="helpers.js"></script>
-<script src="main.js"></script>
-<script src="draw.js"></script>
+  <script src="libs/three.min.js"></script>
+  <script src="libs/requestAnimFrame.polyfill.js"></script>
+  <script src="helpers.js"></script>
+  <script src="draw.js"></script>
+</body>
 </html>
